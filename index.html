@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="GANESH – THE JOURNEY: A respectful, traditional Indian mythological and cultural adventure game across 3 worlds and 18 playable levels.">
+  <meta name="theme-color" content="#b83a04">
+  <title>GANESH – THE JOURNEY</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Yatra+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="game-container">
+    <!-- Main Game Canvas -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- Overlay: Header HUD (In-Game) -->
+    <header id="game-hud" class="hud-overlay hidden" aria-label="Game Status Bar">
+      <div class="hud-left">
+        <button id="btn-hud-pause" class="hud-btn" aria-label="Pause Game" title="Pause Game (Esc)">
+          <span class="hud-icon">⏸</span>
+          <span class="hud-label">Pause</span>
+        </button>
+        <div class="hud-info">
+          <span id="hud-level-title" class="hud-title">Level 1: Birth of Vinayaka</span>
+          <span id="hud-objective" class="hud-sub">Objective: Guard Mount Kailash entrance</span>
+        </div>
+      </div>
+
+      <div class="hud-center">
+        <div id="guardian-meter-container" class="meter-box hidden">
+          <div class="meter-label-row">
+            <span id="meter-title">Guardian Honor</span>
+            <span id="meter-val">100%</span>
+          </div>
+          <div class="meter-bar-track">
+            <div id="meter-fill" class="meter-bar-fill" style="width: 100%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud-right">
+        <div class="hud-stat" id="stat-modaks-box" title="Modaks collected">
+          <span class="stat-icon">🥟</span>
+          <span id="stat-modaks" class="stat-val">0</span>
+        </div>
+        <div class="hud-stat" id="stat-flowers-box" title="Flowers collected">
+          <span class="stat-icon">🌺</span>
+          <span id="stat-flowers" class="stat-val">0</span>
+        </div>
+        <div class="hud-stat" title="Current Score">
+          <span class="stat-icon">⭐</span>
+          <span id="stat-score" class="stat-val">0</span>
+        </div>
+        <div class="hud-stat" title="Level Timer">
+          <span class="stat-icon">⏱</span>
+          <span id="stat-timer" class="stat-val">00:00</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Touch Controls Overlay (Auto-shown on touch devices) -->
+    <div id="touch-controls" class="touch-overlay hidden" aria-hidden="true">
+      <div id="touch-dpad" class="touch-dpad">
+        <button class="dpad-btn dpad-up" data-key="ArrowUp" aria-label="Move Up">▲</button>
+        <button class="dpad-btn dpad-left" data-key="ArrowLeft" aria-label="Move Left">◀</button>
+        <div class="dpad-center">●</div>
+        <button class="dpad-btn dpad-right" data-key="ArrowRight" aria-label="Move Right">▶</button>
+        <button class="dpad-btn dpad-down" data-key="ArrowDown" aria-label="Move Down">▼</button>
+      </div>
+      <div class="touch-actions">
+        <button id="touch-btn-interact" class="touch-action-btn interact-btn" data-key="Space" aria-label="Interact or Action">
+          <span class="btn-icon">✨</span>
+          <span class="btn-text">Interact</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Screen: Main Menu -->
+    <section id="screen-main-menu" class="screen active" aria-label="Main Menu">
+      <div class="menu-decor top-decor"></div>
+      <div class="menu-content">
+        <div class="title-emblem">🕉️</div>
+        <h1 class="main-title">GANESH</h1>
+        <h2 class="sub-title">THE JOURNEY</h2>
+        <p class="tagline">A Divine Mythological & Cultural Adventure</p>
+
+        <nav class="menu-nav">
+          <button id="btn-menu-play" class="gold-btn pulse">
+            <span class="btn-shine"></span>
+            <span class="btn-symbol">🚩</span> Play Journey
+          </button>
+          <button id="btn-menu-worlds" class="gold-btn">
+            <span class="btn-symbol">🗺️</span> Choose World
+          </button>
+          <button id="btn-menu-howto" class="gold-btn">
+            <span class="btn-symbol">📜</span> How to Play
+          </button>
+          <button id="btn-menu-settings" class="gold-btn">
+            <span class="btn-symbol">⚙️</span> Settings
+          </button>
+          <button id="btn-menu-credits" class="gold-btn">
+            <span class="btn-symbol">🪔</span> Credits
+          </button>
+        </nav>
+
+        <div class="menu-footer">
+          <span>Three Worlds • Eighteen Playable Levels • Pure Devotion</span>
+        </div>
+      </div>
+      <div class="menu-decor bottom-decor"></div>
+    </section>
+
+    <!-- Screen: World & Level Selection -->
+    <section id="screen-worlds" class="screen hidden" aria-label="World and Level Selection">
+      <div class="screen-header">
+        <button id="btn-worlds-back" class="nav-back-btn" title="Back to Main Menu">◀ Menu</button>
+        <h2 class="section-title">Select Your Journey</h2>
+        <div class="total-stars-box">
+          <span>⭐ Total Score:</span>
+          <strong id="worlds-total-score">0</strong>
+        </div>
+      </div>
+
+      <!-- World Tabs -->
+      <div class="world-tabs" role="tablist">
+        <button class="world-tab active" data-world="1" role="tab" aria-selected="true">
+          <span class="tab-num">World 1</span>
+          <span class="tab-name">Mythology</span>
+          <span class="tab-prog" id="tab-prog-1">0/6</span>
+        </button>
+        <button class="world-tab" data-world="2" role="tab" aria-selected="false">
+          <span class="tab-num">World 2</span>
+          <span class="tab-name">History</span>
+          <span class="tab-prog" id="tab-prog-2">0/6</span>
+        </button>
+        <button class="world-tab" data-world="3" role="tab" aria-selected="false">
+          <span class="tab-num">World 3</span>
+          <span class="tab-name">Sculpture</span>
+          <span class="tab-prog" id="tab-prog-3">0/6</span>
+        </button>
+      </div>
+
+      <!-- World Info Header -->
+      <div class="world-intro-card">
+        <h3 id="world-card-title">WORLD 1: MYTHOLOGY WORLD</h3>
+        <p id="world-card-desc">Journey through the divine stories of Vinayaka's birth, his sacred bond with Mushika, the sacred circumambulation of Kailash, Chandra's lesson in humility, and the solemn Visarjan.</p>
+      </div>
+
+      <!-- 6 Levels Grid -->
+      <div class="levels-grid" id="levels-container">
+        <!-- Generated dynamically via menuManager.js -->
+      </div>
+
+      <!-- Level Details & Action Drawer -->
+      <div class="level-action-bar">
+        <div class="selected-level-info">
+          <span id="selected-level-number" class="sel-num">Level 1</span>
+          <span id="selected-level-name" class="sel-name">Birth of Vinayaka</span>
+          <span id="selected-level-desc" class="sel-desc">Guard the sacred entrance of Mount Kailash and solve the celestial deduction puzzles.</span>
+        </div>
+        <button id="btn-begin-journey" class="gold-btn glow-btn">
+          <span>Begin Journey ▶</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Screen: How to Play -->
+    <section id="screen-howto" class="screen hidden" aria-label="How to Play">
+      <div class="screen-header">
+        <button id="btn-howto-back" class="nav-back-btn">◀ Back</button>
+        <h2 class="section-title">How to Play</h2>
+        <div style="width: 60px;"></div>
+      </div>
+      <div class="scrollable-content">
+        <div class="guide-grid">
+          <div class="guide-card">
+            <div class="guide-icon">⌨️</div>
+            <h3>Keyboard Controls</h3>
+            <ul>
+              <li><strong>Arrow Keys / WASD</strong>: Move Vinayaka</li>
+              <li><strong>Space / E / Enter</strong>: Interact, talk, collect, use</li>
+              <li><strong>Escape (Esc)</strong>: Pause / Resume</li>
+            </ul>
+          </div>
+          <div class="guide-card">
+            <div class="guide-icon">📱</div>
+            <h3>Touchscreen & Mobile</h3>
+            <ul>
+              <li><strong>On-Screen D-Pad</strong>: Touch and slide to walk</li>
+              <li><strong>Action Button (✨)</strong>: Tap to interact or activate</li>
+              <li><strong>Tap Targets</strong>: Tap directly on items, characters, or puzzles</li>
+            </ul>
+          </div>
+          <div class="guide-card">
+            <div class="guide-icon">🖱️</div>
+            <h3>Mouse Controls</h3>
+            <ul>
+              <li><strong>Click</strong> to interact with items, characters, and dialogues</li>
+              <li><strong>Drag & Drop</strong> puzzle pieces and sacred clay shapes</li>
+            </ul>
+          </div>
+          <div class="guide-card">
+            <div class="guide-icon">🌺</div>
+            <h3>Game Objectives</h3>
+            <ul>
+              <li><strong>Explore & Learn</strong>: Experience authentic Indian mythology and history</li>
+              <li><strong>Solve Puzzles</strong>: Deduce disguised visitors, align celestial runes, and piece together history</li>
+              <li><strong>Eco-Friendly Clay</strong>: Craft your own eco-conscious Ganesha murti from natural Shaadu clay</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen: Settings -->
+    <section id="screen-settings" class="screen hidden" aria-label="Settings">
+      <div class="screen-header">
+        <button id="btn-settings-back" class="nav-back-btn">◀ Back</button>
+        <h2 class="section-title">Settings</h2>
+        <div style="width: 60px;"></div>
+      </div>
+      <div class="scrollable-content">
+        <div class="settings-panel">
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="slider-music">Spiritual Ambient Music</label>
+              <span>Authentic classical Indian raga drone & harmonics</span>
+            </div>
+            <input type="range" id="slider-music" min="0" max="100" value="75">
+            <span id="val-music" class="setting-val">75%</span>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="slider-sfx">Sound Effects (SFX)</label>
+              <span>Temple bells, conch shell, sparkles & footsteps</span>
+            </div>
+            <input type="range" id="slider-sfx" min="0" max="100" value="85">
+            <span id="val-sfx" class="setting-val">85%</span>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="chk-mute">Master Mute</label>
+              <span>Silence all audio instantly</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="chk-mute">
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="chk-reduced-fx">Reduced Visual Effects</label>
+              <span>Limit particle count and animations for battery saving</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="chk-reduced-fx">
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <label>Reset Saved Progress</label>
+              <span>Clear unlocked levels and high scores on this browser</span>
+            </div>
+            <button id="btn-reset-save" class="danger-btn">Reset All Progress</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen: Credits -->
+    <section id="screen-credits" class="screen hidden" aria-label="Credits">
+      <div class="screen-header">
+        <button id="btn-credits-back" class="nav-back-btn">◀ Back</button>
+        <h2 class="section-title">Sacred Credits</h2>
+        <div style="width: 60px;"></div>
+      </div>
+      <div class="scrollable-content">
+        <div class="credits-card">
+          <div class="credits-symbol">🪔</div>
+          <h3>GANESH – THE JOURNEY</h3>
+          <p class="credits-desc">A respectful mythological adventure and cultural tribute to Lord Ganesha.</p>
+          
+          <div class="credits-section">
+            <h4>Created & Programmed by</h4>
+            <p><strong>Lohitha Manaswini</strong> (lohithamanaswini10-ux)</p>
+          </div>
+
+          <div class="credits-section">
+            <h4>Concept, Design & Direction</h4>
+            <p>Traditional Indian Mythological Lore & Vedic Heritage</p>
+          </div>
+
+          <div class="credits-section">
+            <h4>Audio & Synthesis</h4>
+            <p>Procedural Classical Indian Ragas & Temple Bells synthesized via native HTML5 Web Audio API.</p>
+          </div>
+
+          <div class="credits-section">
+            <h4>Visuals & Art Direction</h4>
+            <p>Original 2D Vector & Canvas Graphics celebrating Mount Kailash, ancient temple architecture, traditional eco-friendly Shaadu clay sculpture, and Ganesh Chaturthi festivities.</p>
+          </div>
+
+          <div class="credits-section">
+            <h4>Dedication</h4>
+            <p class="sanskrit-dedication">॥ ॐ गं गणपतये नमः ॥<br>Vakratunda Mahakaya Suryakoti Samaprabha | Nirvighnam Kuru Me Deva Sarvakaryeshu Sarvada ॥</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modal: Interactive Dialogue Box -->
+    <div id="modal-dialogue" class="modal-backdrop hidden" aria-hidden="true">
+      <div class="dialogue-box">
+        <div class="dialogue-avatar-container">
+          <canvas id="dialogue-avatar" width="90" height="90"></canvas>
+          <span id="dialogue-speaker" class="dialogue-speaker-name">Vinayaka</span>
+        </div>
+        <div class="dialogue-body">
+          <p id="dialogue-text" class="dialogue-speech">Loading message...</p>
+          <div class="dialogue-footer">
+            <span class="dialogue-prompt">Press Space / Tap to continue ▶</span>
+            <button id="btn-dialogue-next" class="gold-btn small-btn">Continue</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Puzzle & Interactive Deduction Modal -->
+    <div id="modal-puzzle" class="modal-backdrop hidden" aria-hidden="true">
+      <div class="puzzle-container">
+        <div class="puzzle-header">
+          <h3 id="puzzle-title">Sacred Guardian Puzzle</h3>
+          <button id="btn-puzzle-close" class="puzzle-close-btn" aria-label="Close">✕</button>
+        </div>
+        <p id="puzzle-instruction" class="puzzle-sub">Observe the visitor and decipher their intent.</p>
+        
+        <div id="puzzle-content" class="puzzle-dynamic-area">
+          <!-- Dynamic puzzle canvas/elements inserted by level logic -->
+        </div>
+
+        <div id="puzzle-actions" class="puzzle-actions-row">
+          <!-- Action buttons inserted dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Pause Menu -->
+    <div id="modal-pause" class="modal-backdrop hidden" aria-hidden="true">
+      <div class="pause-card">
+        <h3 class="pause-title">Journey Paused</h3>
+        <p class="pause-sub">Mount Kailash awaits your return.</p>
+        <div class="pause-btn-col">
+          <button id="btn-pause-resume" class="gold-btn glow-btn">▶ Resume Journey</button>
+          <button id="btn-pause-restart" class="gold-btn">🔄 Restart Level</button>
+          <button id="btn-pause-howto" class="gold-btn">📜 How to Play</button>
+          <button id="btn-pause-worlds" class="gold-btn">🗺️ World Selection</button>
+          <button id="btn-pause-menu" class="gold-btn">🏠 Main Menu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Level Victory / Results -->
+    <div id="modal-victory" class="modal-backdrop hidden" aria-hidden="true">
+      <div class="victory-card">
+        <div class="victory-header">
+          <div class="victory-flower">🌺</div>
+          <h3 id="victory-title" class="victory-heading">Level Complete!</h3>
+          <p id="victory-subtitle" class="victory-sub">Blessings bestowed upon your noble deed.</p>
+        </div>
+
+        <div class="victory-stars" id="victory-stars-box">
+          <span class="star-item gold">★</span>
+          <span class="star-item gold">★</span>
+          <span class="star-item gold">★</span>
+        </div>
+
+        <div class="victory-stats-grid">
+          <div class="v-stat">
+            <span class="v-label">Score</span>
+            <span id="v-stat-score" class="v-val">1250</span>
+          </div>
+          <div class="v-stat">
+            <span class="v-label">Time</span>
+            <span id="v-stat-time" class="v-val">01:45</span>
+          </div>
+          <div class="v-stat">
+            <span class="v-label">Modaks</span>
+            <span id="v-stat-modaks" class="v-val">8/8</span>
+          </div>
+          <div class="v-stat">
+            <span class="v-label">Accuracy</span>
+            <span id="v-stat-accuracy" class="v-val">100%</span>
+          </div>
+        </div>
+
+        <div class="victory-btn-row">
+          <button id="btn-victory-replay" class="gold-btn">🔄 Replay</button>
+          <button id="btn-victory-next" class="gold-btn glow-btn">Next Level ▶</button>
+          <button id="btn-victory-worlds" class="gold-btn">🗺️ Worlds</button>
+          <button id="btn-victory-menu" class="gold-btn">🏠 Menu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: World Complete Banner -->
+    <div id="modal-world-complete" class="modal-backdrop hidden" aria-hidden="true">
+      <div class="world-complete-card">
+        <div class="world-comp-halo">🕉️</div>
+        <h2 id="world-comp-banner" class="world-comp-title">MYTHOLOGY WORLD COMPLETE — 6/6 LEVELS</h2>
+        <p id="world-comp-desc" class="world-comp-quote">"Thank you for joining Vinayaka on his journey."</p>
+
+        <div class="world-comp-stats">
+          <div class="wc-box">
+            <span>Levels Mastered</span>
+            <strong>6 / 6</strong>
+          </div>
+          <div class="wc-box">
+            <span>World Total Score</span>
+            <strong id="wc-total-score">7500</strong>
+          </div>
+          <div class="wc-box">
+            <span>Total Time</span>
+            <strong id="wc-total-time">12:30</strong>
+          </div>
+        </div>
+
+        <div class="victory-btn-row">
+          <button id="btn-world-comp-replay" class="gold-btn">🔄 Replay Level 6</button>
+          <button id="btn-world-comp-worlds" class="gold-btn glow-btn">Next World 🗺️</button>
+          <button id="btn-world-comp-menu" class="gold-btn">🏠 Main Menu</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Game Scripts (ES6 Modules) -->
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
